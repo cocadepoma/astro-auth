@@ -1,4 +1,6 @@
+import { firebase } from "@firebase/config";
 import { defineAction, z } from "astro:actions";
+import { createUserWithEmailAndPassword, type AuthError } from "firebase/auth";
 
 export const registerUser = defineAction({
   accept: 'form',
@@ -18,6 +20,19 @@ export const registerUser = defineAction({
       context.cookies.delete('email');
     }
 
-    return { ok: true, message: 'User registered' };
+    try {
+      const user = await createUserWithEmailAndPassword(firebase.auth, email, password);
+
+      console.log(user)
+      return { 'ok': true };
+    } catch (error) {
+      const firebaseError = error as AuthError;
+
+      if (firebaseError.code === 'auth/email-already-in-use') {
+        throw new Error('Email already in use');
+      }
+
+      throw new Error('Error registering user');
+    }
   },
 });
