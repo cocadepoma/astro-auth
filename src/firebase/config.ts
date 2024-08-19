@@ -6,12 +6,12 @@ import { getAuth } from 'firebase/auth';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDGrkJYSYIlb0Mf5_e1Ip48VQ_npKjNl3M",
-  authDomain: "devtalles-astro-auth.firebaseapp.com",
-  projectId: "devtalles-astro-auth",
-  storageBucket: "devtalles-astro-auth.appspot.com",
-  messagingSenderId: "486365002993",
-  appId: "1:486365002993:web:3d5e031a548fa1444f3d50"
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: "",
 };
 
 // Initialize Firebase
