@@ -1,7 +1,5 @@
 ---
-import { firebase } from "@firebase/config";
 import MainLayout from "@layouts/MainLayout.astro";
-import { Image } from "astro:assets";
 
 
 const { user, isLoggedIn } = Astro.locals;
@@ -24,7 +22,7 @@ console.log(avatar);
 			{
 				avatar 
 					? (
-						<Image
+						<img
 							class="w-32 mx-auto rounded-full -mt-20 border-8 border-white"
 							src={avatar}
 							alt="user-avatar"
