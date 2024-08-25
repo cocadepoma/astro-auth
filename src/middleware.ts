@@ -12,6 +12,8 @@ export const onRequest = defineMiddleware((context, next) => {
 
   context.locals.isLoggedIn = isLoggedIn;
 
+  console.log(user);
+
   if (user) {
     context.locals.user = {
       email: user.email!,
