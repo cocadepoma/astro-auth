@@ -8,9 +8,7 @@ if(!user || !isLoggedIn) {
 	return Astro.redirect("/login");
 }
 
-const {displayName, email, avatar, emailVerified } = user;
-
-console.log(avatar);
+const { displayName, email, avatar, emailVerified } = user;
 ---
 
 <MainLayout title="Protected">
