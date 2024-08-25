@@ -1,16 +1,16 @@
 ---
 import { firebase } from "@firebase/config";
 import MainLayout from "@layouts/MainLayout.astro";
+import { Image } from "astro:assets";
 
-const firebaseUser = firebase.auth.currentUser;
 
-if (firebaseUser === null) {
+const { user, isLoggedIn } = Astro.locals;
+
+if(!user || !isLoggedIn) {
 	return Astro.redirect("/login");
 }
 
-const { displayName, email, photoURL, emailVerified } = firebaseUser;
-
-const name = displayName ?? "No display name";
+const {displayName, email, avatar, emailVerified } = user;
 ---
 
 <MainLayout title="Protected">
@@ -20,30 +20,36 @@ const name = displayName ?? "No display name";
 	>
 		<div class="rounded card w-96 mx-auto bg-white shadow-xl hover:shadow">
 			{
-				photoURL ? (
-					<img
-						class="w-32 mx-auto rounded-full -mt-20 border-8 border-white"
-						src="https://avatars.githubusercontent.com/u/67946056?v=4"
-						alt=""
-					/>
-				) : (
-					<div class="w-32 h-32 mx-auto rounded-full -mt-20 border-8 border-white bg-gray-300 flex justify-center items-center">
-						<span class="text-white text-3xl font-extrabold">
-							{name!.substring(0, 2)}
-						</span>
-					</div>
-				)
+				avatar 
+					? (
+						<Image
+							class="w-32 mx-auto rounded-full -mt-20 border-8 border-white"
+							src={avatar}
+							alt="user-avatar"
+							width={128}
+							height={128}
+						/>
+					) 
+					: (
+						<div class="w-32 h-32 mx-auto rounded-full -mt-20 border-8 border-white bg-gray-300 flex justify-center items-center">
+							<span class="text-white text-3xl font-extrabold">
+								{displayName!.substring(0, 2)}
+							</span>
+						</div>
+					)
 			}
 
-			<div class="text-center mt-2 text-3xl font-medium">{name}</div>
+			<div class="text-center mt-2 text-3xl font-medium">{displayName}</div>
 			<div class="text-center mt-2 font-light text-sm">{email}</div>
 			<div class="text-center font-normal text-lg">
 				{
-					emailVerified ? (
-						<span class="text-green-500">Verified</span>
-					) : (
-						<span class="text-red-500">Not Verified</span>
-					)
+					emailVerified 
+						? (
+							<span class="text-green-500">Email Verified</span>
+						) 
+						: (
+							<span class="text-red-500">Email Not Verified</span>
+						)
 				}
 			</div>
 			<div class="px-6 text-center mt-2 font-light text-sm">

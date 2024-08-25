@@ -1,10 +1,6 @@
 ---
-const links = [
-  { name: 'Home', href: '/' },
-  { name: 'Protected', href: '/protected' },
-  { name: 'Login', href: '/login' },
-  { name: 'Close session', href: '#' },
-];
+
+const { isLoggedIn } = Astro.locals;
 
 ---
 <nav class="flex justify-between px-20 py-10 items-center bg-white">
@@ -14,12 +10,27 @@ const links = [
 
     <ul class="flex items-center space-x-6">
 
+      <li class="font-semibold text-gray-700">
+        <a id="home" href="/">Home</a>
+      </li>
+
+
+
       {
-        links.map((link) => (
-          <li class="font-semibold text-gray-700">
-            <a href={link.href}>{link.name}</a>
-          </li>
-        ))
+        isLoggedIn
+          ? (
+            <li class="font-semibold text-gray-700">
+              <a id="protected" href="/protected">Protected</a>
+            </li>
+            <li class="font-semibold text-gray-700">
+              <a id="close-session" href="#">Close session</a>
+            </li>
+          )
+          : (
+            <li class="font-semibold text-gray-700">
+              <a id="login" href="/login">Login</a>
+            </li>
+          )
       }
 
       <li>
@@ -39,3 +50,14 @@ const links = [
     </ul>
   </div>
 </nav>
+
+<script>
+  import { actions } from "astro:actions";
+
+  const logoutElement = document.getElementById('close-session');
+
+  logoutElement?.addEventListener('click', async (event) => {
+    await actions.logout();
+    window.location.href = '/';
+  });
+</script>

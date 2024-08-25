@@ -1,5 +1,9 @@
 ---
 import AuthLayout from "@layouts/AuthLayout.astro";
+
+const email = Astro.cookies.get("email")?.value ?? "";
+
+const rememberMe = !!email;
 ---
 
 <AuthLayout title="Login | Auth App">
@@ -17,30 +21,108 @@ import AuthLayout from "@layouts/AuthLayout.astro";
     <form class="space-y-5" transition:name="form-div">
       <div class="space-y-2">
         <label class="text-sm font-medium text-gray-700 tracking-wide">Email</label>
-        <input type="email" class=" w-full text-base px-4 py-2 border  border-gray-300 rounded-lg focus:outline-none focus:border-green-400" placeholder="mail@gmail.com">
+        <input value={email} name="email" type="email" class=" w-full text-base px-4 py-2 border  border-gray-300 rounded-lg focus:outline-none focus:border-green-400" placeholder="mail@gmail.com">
       </div>
 
       <div class="space-y-2">
         <label class="mb-5 text-sm font-medium text-gray-700 tracking-wide">
           Password
         </label>
-        <input type="password" class="w-full content-center text-base px-4 py-2 border  border-gray-300 rounded-lg focus:outline-none focus:border-green-400" placeholder="Enter your password">
+        <input autocomplete="true" name="password" type="password" class="w-full content-center text-base px-4 py-2 border  border-gray-300 rounded-lg focus:outline-none focus:border-green-400" placeholder="Enter your password">
       </div>
       
       <div class="flex items-center">
-        <input id="remember_me" name="remember_me" type="checkbox" class="h-4 w-4 bg-blue-500 focus:ring-blue-400 border-gray-300 rounded">
+        <input checked={rememberMe} id="remember_me" name="remember_me" type="checkbox" class="h-4 w-4 bg-blue-500 focus:ring-blue-400 border-gray-300 rounded">
         <label for="remember_me" class="ml-2 block text-sm text-gray-800">
           Remember me
         </label>
       </div>
 
       <div>
-        <button type="submit" class="w-full flex justify-center bg-green-400  hover:bg-green-500 text-gray-100 p-3  rounded-full tracking-wide font-semibold  shadow-lg cursor-pointer transition ease-in duration-500">
+        <button id="btn-submit" type="submit" class="disabled:bg-gray-300 disabled:hover:bg-gray-300 w-full flex justify-center bg-green-400  hover:bg-green-500 text-gray-100 p-3  rounded-full tracking-wide font-semibold  shadow-lg cursor-pointer transition ease-in duration-500">
           Sign in
         </button>
+
+        <div class="flex flex-1 w-full my-2">
+          <div class="w-full border-t-2 border-gray-500"></div>
+        </div>
+
+        <button id="btn-google" type="button" class="disabled:bg-gray-300 disabled:hover:bg-gray-300 disabled:cursor-default w-full flex justify-center bg-red-400  hover:bg-red-500 text-gray-100 p-3  rounded-full tracking-wide font-semibold  shadow-lg cursor-pointer transition ease-in duration-500">
+          Sign in with Google
+        </button>
       </div>
+
     </form>
     
     </div>
   </div>
 </AuthLayout>
+
+<script>
+  import { firebase } from "@firebase/config";
+  import { actions } from "astro:actions";
+  import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+  import Swal from "sweetalert2";
+
+  const form = document.querySelector("form");
+  const btnSubmit = document.querySelector("#btn-submit") as HTMLButtonElement;
+  const btnGoogle = document.querySelector("#btn-google") as HTMLButtonElement;
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    btnSubmit?.setAttribute("disabled", "disabled");
+
+    const formData = new FormData(form);
+
+    const { data, error } = await actions.login({
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+      remember_me: !!formData.get("remember_me"),
+    });
+
+    if (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid credentials",
+        text: error.message,
+      });
+
+      console.log(error);
+      btnSubmit?.removeAttribute("disabled");
+      return;
+    }
+
+    window.location.replace("/protected");
+  });
+
+  btnGoogle?.addEventListener("click", async () => {
+    btnGoogle?.setAttribute("disabled", "disabled");
+
+    const provider = new GoogleAuthProvider();
+
+    try {
+      const credentials = await signInWithPopup(firebase.auth, provider);
+
+      const { error } = await actions.loginWithGoogle(credentials);
+
+      if (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Invalid credentials",
+          text: error.message,
+        });
+
+        console.log(error);
+        btnGoogle?.removeAttribute("disabled");
+        return;
+      }
+
+      btnGoogle.innerText = "Redirecting...";
+      window.location.replace("/protected");
+    } catch (error) {
+      console.warn(error);
+      
+    }
+  });
+</script>

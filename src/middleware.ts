@@ -1,33 +1,33 @@
-import type { MiddlewareNext } from "astro";
+// This will not run because of the name of the file, this is only for demonstration purposes
+
+import { firebase } from "@firebase/config";
 import { defineMiddleware } from "astro:middleware";
 
-const privateRoutes = ['/protected']
+const privateRoutes = ['/protected'];
+const publicRoutes = ['/login', '/register'];
 
-// `context` and `next` are automatically typed
 export const onRequest = defineMiddleware((context, next) => {
+  const isLoggedIn = !!firebase.auth.currentUser;
+  const user = firebase.auth.currentUser;
 
-  if (privateRoutes.includes(context.url.pathname)) {
-    return checkLocalAuth(context.request.headers.get('Authorization') ?? '', next);
+  context.locals.isLoggedIn = isLoggedIn;
+
+  if (user) {
+    context.locals.user = {
+      email: user.email!,
+      displayName: user.displayName!,
+      avatar: user.photoURL ?? '',
+      emailVerified: user.emailVerified,
+    }
+  }
+
+  if (!isLoggedIn && privateRoutes.includes(context.url.pathname)) {
+    return context.redirect('/');
+  }
+
+  if (isLoggedIn && publicRoutes.includes(context.url.pathname)) {
+    return context.redirect('/');
   }
 
   return next();
 });
-
-
-const checkLocalAuth = (authHeaders: string, next: MiddlewareNext) => {
-  if (authHeaders) {
-    const authValue = authHeaders.split(' ')[1] ?? 'user:pass';
-    const [user, password] = atob(authValue).split(':');
-
-    if (user === 'admin' && password === 'admin') {
-      return next();
-    }
-  }
-
-  return new Response('Required Authorization', {
-    status: 401, headers: {
-      'Content-Type': 'application/json',
-      'WWW-Authenticate': 'Basic realm="Secure Area"'
-    }
-  });
-}
